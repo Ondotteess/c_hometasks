@@ -1,8 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
-#include <conio.h>
-#include <ctype.h>
 #define PRECISION 10
 #pragma warning(disable:4996)
 
@@ -39,7 +36,6 @@ void printArr(char* arr, size_t len) {
 		printf("%c", arr[i]);
 	}
 }
-
 
 _Bool is_word(char* arr, size_t size) {
 	if (size > 1) {
@@ -88,7 +84,6 @@ char* far_to_cel(char* arr, size_t size, size_t* new_size) {
 			sub[i] = '.';
 		}
 	}
-	
 
 	far = atof(sub);
 
@@ -121,8 +116,6 @@ char* far_to_cel(char* arr, size_t size, size_t* new_size) {
 		result[n_s++] = first[i];
 	}
 
-	//result[n_s++] = first[n_s-1];
-
 	size_t o_s = n_s+1;
 	result[n_s++] = ',';
 
@@ -140,8 +133,6 @@ char* far_to_cel(char* arr, size_t size, size_t* new_size) {
 	printf(" %d", n_s);
 	printf("-----\n");
 
-	//printArr(result, n_s);
-	
 	*new_size = n_s;
 	return result;
 }
@@ -181,20 +172,15 @@ char* algebra(char* first, char op, char* second) {
 	case '/': result = f / s;
 	}
 
-	//char* out = (char*)malloc(10 * sizeof(char));
 	char out[20];
 	itoa(result, out, 10);
 	
 	return out;
 }
-	
-//void arr_realloc(size_t arr_capacity, size_t arr_len, ) {
-//
-//}
 
 
-int main() {
-	FILE* test = fopen("test.txt", "r");
+int main(int argc, const char** argv) {
+	FILE* test = fopen(argv[1], "r");
 
 	struct dym_arr arr_len;
 	arr_len.arr = NULL;
@@ -218,11 +204,6 @@ int main() {
 
 		sym = fgetc(test);
 
-		//if (str_arr.len > 0) {
-		//	if (sym == ' ' && str_arr.arr[arr_len.len-1][0] == ' ') {
-		//		continue;
-		//	}
-		//}
 
 		if (arr_len.capacity - arr_len.len == 1) {
 			arr_len.arr = (size_t*)realloc(arr_len.arr, (arr_len.capacity * 2) * sizeof(size_t));
@@ -366,7 +347,7 @@ int main() {
 			flag_r == 0;
 	
 			if (garbage.capacity - garbage.len <= 1) {
-				garbage.arr = (size_t*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(size_t));
+				garbage.arr = (char*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(char));
 				garbage.capacity *= 2;
 				nullCheck(garbage.arr);
 			}
@@ -374,7 +355,7 @@ int main() {
 			garbage.arr[garbage.len++] = index_l;
 	
 			if (garbage.capacity - garbage.len <= 1) {
-				garbage.arr = (size_t*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(size_t));
+				garbage.arr = (char*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(char));
 				garbage.capacity *= 2;
 				nullCheck(garbage.arr);
 			}
@@ -391,7 +372,7 @@ int main() {
 			index_r = i;
 	
 			if (garbage.capacity - garbage.len <= 1) {
-				garbage.arr = (size_t*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(size_t));
+				garbage.arr = (char*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(char));
 				garbage.capacity *= 2;
 				nullCheck(garbage.arr);
 			}
@@ -399,7 +380,7 @@ int main() {
 			garbage.arr[garbage.len++] = index_l;
 	
 			if (garbage.capacity - garbage.len <= 1) {
-				garbage.arr = (size_t*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(size_t));
+				garbage.arr = (char*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(char));
 				garbage.capacity *= 2;
 				nullCheck(garbage.arr);
 			}
@@ -417,17 +398,19 @@ int main() {
 			if (is_temp(str_arr.arr[i], arr_len.arr[i])) {
 				size_t new_size;
 				str_arr.arr[i] = far_to_cel(str_arr.arr[i], arr_len.arr[i], &new_size);
-				arr_len.arr[i] = new_size;
+				arr_len.arr[i] = strlen(str_arr.arr[i]);
 			}
 		}
 	}
 
-	for (size_t i = 0; i < str_arr.len-4; i++) {
-		if (is_num(str_arr.arr[i][0]) && is_oper(str_arr.arr[i + 2][0]) && is_num(str_arr.arr[i + 4][0])) {
-			str_arr.arr[i + 2] = algebra(str_arr.arr[i], str_arr.arr[i + 2][0], str_arr.arr[i + 4]);
-			arr_len.arr[i + 2] = strlen(str_arr.arr[i + 2]);
-			str_arr.arr[i][0] = ' ';
-			str_arr.arr[i + 4][0] = ' ';
+	if (str_arr.len > 4) {
+		for (size_t i = 0; i < str_arr.len - 4; i++) {
+			if (is_num(str_arr.arr[i][0]) && is_oper(str_arr.arr[i + 2][0]) && is_num(str_arr.arr[i + 4][0])) {
+				str_arr.arr[i + 2] = algebra(str_arr.arr[i], str_arr.arr[i + 2][0], str_arr.arr[i + 4]);
+				arr_len.arr[i + 2] = strlen(str_arr.arr[i + 2]);
+				str_arr.arr[i][0] = ' ';
+				str_arr.arr[i + 4][0] = ' ';
+			}
 		}
 	}
 	
@@ -435,10 +418,9 @@ int main() {
 		printf("%d ", garbage.arr[i]);
 		str_arr.arr[garbage.arr[i]][0] = ' ';
 	}
+
 	
-	//printf("\n");
-	//
-	FILE* file = fopen("output.txt", "w");
+	FILE* file = fopen(argv[2], "w");
 	char* str = NULL; 
 	
 	for (size_t i = 0; i < (str_arr.len); i++) {
@@ -446,32 +428,21 @@ int main() {
 			continue;
 		}
 
+
 		if (i > 0) {
 			if (str_arr.arr[i - 1][0] == ' ' && str_arr.arr[i][0] == ' ') {
+				continue;
+			} else if ((str_arr.arr[i - 1][0] == '\n' && str_arr.arr[i][0] == ' ')) {
 				continue;
 			}
 		}
 		
 		for (size_t j = 0; j < arr_len.arr[i]; j++) {
-			if (is_temp(str_arr.arr[i], arr_len.arr[i]) && str_arr.arr[i][j] == 0) {
-				continue;
-			}
-			else if (is_temp(str_arr.arr[i], arr_len.arr[i] ) && str_arr.arr[i][j] == 'C') {
-				fputc(' ', file);
-			}
-			else {
-				fputc(str_arr.arr[i][j], file);
-			}
+			fputc(str_arr.arr[i][j], file);
 		}
 	
-		//printArr(str_arr.arr[i], arr_len.arr[i]);
 	}
 	
-
-	//for (size_t i = 0; i < str_arr.len; i++) {
-	//	printArr(str_arr.arr[i], arr_len.arr[i]);
-	//	printf("\n");
-	//}
 
 
 	return 0;
