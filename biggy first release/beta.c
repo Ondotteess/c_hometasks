@@ -29,6 +29,7 @@ struct dym_arr {
 	size_t counter;
 };
 
+
 int check = 0;
 
 void printArr(char* arr, size_t len) {
