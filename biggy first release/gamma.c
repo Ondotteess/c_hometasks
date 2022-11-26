@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define DEBUG
+//#define DEBUG
 #define PRECISION 10
 #pragma warning(disable:4996)
 
@@ -479,9 +479,11 @@ int main() {
 
 	//Far to cel
 	for (size_t i = 0; i < str_arr.len; i++) {
-		#ifdef DEBUG
+	#ifdef DEBUG
 		printf("str_log:\t %d", strlen(str_arr.arr[i].arr));
-		#endif // DEBUG
+	#endif // DEBUG
+
+
 		if (strlen(str_arr.arr[i].arr) > 3) {
 			if (is_temp(str_arr.arr[i])) {
 				str_arr.arr[i].arr = far_to_cel(str_arr.arr[i], strlen(str_arr.arr[i].arr));
@@ -489,7 +491,6 @@ int main() {
 		}
 	}
 
-	printf("\n------\n");
 
 	FILE* file = fopen("output.txt", "w");
 	char* str = NULL;
@@ -520,35 +521,36 @@ int main() {
 	}
 	
 	// do some math
-	for (size_t i = 0; i < (out.len); i++) {
-		if (i < out.len - 4) {
-			if (is_num(out.arr[i]) && is_oper(out.arr[i + 2].arr[0]) && is_num(out.arr[i + 4])) {
-				out.arr[i].arr = math_2(out.arr[i], out.arr[i + 2].arr[0], out.arr[i + 4]);
-				out.arr[i + 2].arr = " ";
-				out.arr[i + 4].arr = " ";
+		for (size_t i = 0; i < (out.len); i++) {
+			if (i < out.len - 4) {
+				if (is_num(out.arr[i]) && is_oper(out.arr[i + 2].arr[0]) && is_num(out.arr[i + 4])) {
+					out.arr[i].arr = math_2(out.arr[i], out.arr[i + 2].arr[0], out.arr[i + 4]);
+					out.arr[i + 2].arr = " ";
+					out.arr[i + 4].arr = " ";
+
+					continue;
+				}
+			}
+			if (i < out.len - 3) {
+				if (is_num(out.arr[i]) && is_oper(out.arr[i + 2].arr[0]) && is_num(out.arr[i + 3])) {
+					out.arr[i].arr = math_2(out.arr[i], out.arr[i + 2].arr[0], out.arr[i + 3]);
+					out.arr[i + 2].arr = " ";
+					out.arr[i + 3].arr = " ";
+					continue;
+				}
+				if (is_num(out.arr[i]) && is_oper(out.arr[i + 1].arr[0]) && is_num(out.arr[i + 3])) {
+					out.arr[i].arr = math_2(out.arr[i], out.arr[i + 1].arr[0], out.arr[i + 3]);
+					out.arr[i + 1].arr = " ";
+					out.arr[i + 3].arr = " ";
+					continue;
+				}
+			}
+			if (is_math(out.arr[i]) && out.arr[i].arr[0] != '\0') {
+				out.arr[i].arr = math_1(out.arr[i]);
 				continue;
 			}
 		}
-		if (i < out.len - 3) {
-			if (is_num(out.arr[i]) && is_oper(out.arr[i + 2].arr[0]) && is_num(out.arr[i + 3])) {
-				out.arr[i].arr = math_2(out.arr[i], out.arr[i + 2].arr[0], out.arr[i + 3]);
-				out.arr[i + 2].arr = " ";
-				out.arr[i + 3].arr = " ";
-				continue;
-			}
-			if (is_num(out.arr[i]) && is_oper(out.arr[i + 1].arr[0]) && is_num(out.arr[i + 3])) {
-				out.arr[i].arr = math_2(out.arr[i], out.arr[i + 1].arr[0], out.arr[i + 3]);
-				out.arr[i + 1].arr = " ";
-				out.arr[i + 3].arr = " ";
-				continue;
-			}
-		}
-		if (is_math(out.arr[i]) && out.arr[i].arr[0] != '\0') {
-			out.arr[i].arr = math_1(out.arr[i]);
-			continue;
-		}
-	}
-	
+
 	//fprintf
 	for (size_t i = 0; i < out.len; i++) {
 		if (i > 0) {
