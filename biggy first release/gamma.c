@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#define DEBUG
+#define DEBUG
 #define PRECISION 10
 #pragma warning(disable:4996)
 
