@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+//#define DEBUG
 #define PRECISION 10
 #pragma warning(disable:4996)
 
@@ -10,13 +11,11 @@ void nullCheck(arr) {
 	}
 }
 
-
 typedef struct {
 	char* arr;
 	size_t len;
 	size_t capacity;
 } string;
-
 
 typedef struct {
 	string* arr;
@@ -24,6 +23,18 @@ typedef struct {
 	size_t capacity;
 } string_arr;
 
+
+void str_realloc(string* s) {
+	s->arr = (char*)realloc(s->arr, sizeof(char) * s->capacity * 2);
+	nullCheck(s->arr);
+	s->capacity *= 2;
+}
+
+void str_arr_realloc(string_arr* s) {
+	s->arr = (string*)realloc(s->arr, sizeof(string) * s->capacity * 2);
+	nullCheck(s->arr);
+	s->capacity *= 2;
+}
 
 _Bool is_num(string s) {
 	for (size_t i = 0; i < strlen(s.arr); i++) {
@@ -89,16 +100,14 @@ _Bool is_temp(string s) {
 //? use string type
 char** far_to_cel(string s, size_t size) {
 	float far;
-	char* sub = (char*)malloc((size) * sizeof(char));
-	
+
 	for (size_t i = 0; i < size; i++) {
-		sub[i] = s.arr[i];
 		if (s.arr[i] == ',') {
-			sub[i] = '.';
+			s.arr[i] = '.';
 		}
 	}
 
-	far = atof(sub);
+	far = atof(s.arr);
 
 	float cel = (far - 32) * 5 / 9;;
 
@@ -119,10 +128,12 @@ char** far_to_cel(string s, size_t size) {
 	char* second = (char*)malloc(10 * sizeof(char));
 
 	itoa(w, first, 10);
-	printf("\n-------\n");
-	printf("%s", first);
-	printf("\n-----\n");
 	itoa(f, second, 10);
+	#ifdef DEBUG
+	printf("\n-------\n");
+	printf("%s %s", first, second);
+	printf("\n-----\n");
+	#endif // DEBUG
 
 	char* result = (char*)malloc(23 * sizeof(char));
 
@@ -184,10 +195,6 @@ _Bool is_math(string s) {
 	}
 }
 
-char first_el(string s) {
-	return s.arr[0];
-}
-
 char** math_1(string s) {
 	char op = '+';
 	string first;
@@ -204,22 +211,19 @@ char** math_1(string s) {
 	second.arr = NULL;
 
 	if (first.capacity - first.len == 1) {
-		first.capacity *= 2;
-		first.arr = (char*)realloc(first.arr, sizeof(char) * first.capacity);
+		str_realloc(&first);
 	}
 
 	for (size_t i = 0; i < strlen(s.arr); i++) {
 		if (s.arr[i] >= '0' && s.arr[i] <= '9') {
 			if (first.capacity - first.len == 1) {
-				first.capacity *= 2;
-				first.arr = (char*)realloc(first.arr, sizeof(char) * first.capacity);
+				str_realloc(&first);
 			}
 			first.arr[i] = s.arr[i];
 		}
 		else {
 			if (first.capacity - first.len == 1) {
-				first.capacity *= 2;
-				first.arr = (char*)realloc(first.arr, sizeof(char) * first.capacity);
+				str_realloc(&first);
 			}
 			first.arr[i] = '\0';
 			op = s.arr[i];
@@ -229,14 +233,12 @@ char** math_1(string s) {
 	}
 
 	if (second.capacity - second.len == 1) {
-		second.capacity *= 2;
-		second.arr = (char*)realloc(second.arr, sizeof(char) * second.capacity);
+		str_realloc(&second);
 	}
 	for (size_t i = n_s+1; i < strlen(s.arr); i++) {
 		if (s.arr[i] >= '0' && s.arr[i] <= '9') {
 			if (second.capacity - second.len == 1) {
-				second.capacity *= 2;
-				second.arr = (char*)realloc(second.arr, sizeof(char) * second.capacity);
+				str_realloc(&second);
 			}
 			second.arr[i-n_s-1] = s.arr[i];
 		} else {
@@ -275,10 +277,9 @@ char* math_2(string s1, char op, string s2) {
 
 																								
 	char out[30];																				
-	itoa(result, s1.arr, 10);																		
-	printf("^^^^^^^^%s^^^^^^^^^", s1.arr);
+	itoa(result, s1.arr, 10);							
 	return s1.arr;
-}																								
+}																
 																								
 
 int main() {
@@ -303,23 +304,21 @@ int main() {
 		sym = fgetc(test);
 
 		if (str_arr.capacity - str_arr.len == 1) {
-			str_arr.arr = (string*)realloc(str_arr.arr, (str_arr.capacity * 2) * sizeof(string));
-			nullCheck(str_arr.arr);
-			str_arr.capacity *= 2;
+			str_arr_realloc(&str_arr);
 		}
 
 		if (s.capacity - s.len == 1) {
-			s.arr = (char*)realloc(s.arr, (s.capacity * 2) * sizeof(char));
-			nullCheck(s.arr);
-			s.capacity *= 2;
+			str_realloc(&s);
 		}
 
 		if (sym == EOF) {
 			if (feof(test) != 0) {
 				s.arr[s.len] = '\0';
 				str_arr.arr[str_arr.len++].arr = s.arr;
-				printf("%s", str_arr.arr[str_arr.len-1].arr);
+				#ifdef DEBUG
+				printf("%s", str_arr.arr[str_arr.len - 1].arr);
 				printf("\nend of reading\n");
+				#endif // DEBUG
 				break;
 			}
 			else {
@@ -334,15 +333,14 @@ int main() {
 		} else {
 			if (s.len > 0) {
 				if (str_arr.capacity - str_arr.len == 1) {
-					str_arr.arr = (string*)realloc(str_arr.arr, (str_arr.capacity * 2) * sizeof(string));
-					nullCheck(str_arr.arr);
-					str_arr.capacity *= 2;
+					str_arr_realloc(&str_arr);
 				}
 
 				s.arr[s.len] = '\0';
 				str_arr.arr[str_arr.len++].arr = s.arr;
-
+				#ifdef DEBUG
 				printf("%s", str_arr.arr[str_arr.len - 1].arr);
+				#endif // DEBUG
 
 				s.arr = (char*)malloc(sizeof(char));
 				s.len = 0;
@@ -354,14 +352,13 @@ int main() {
 
 
 			if (str_arr.capacity - str_arr.len == 1) {
-				str_arr.arr = (string*)realloc(str_arr.arr, (str_arr.capacity * 2) * sizeof(string));
-				nullCheck(str_arr.arr);
-				str_arr.capacity *= 2;
+				str_arr_realloc(&str_arr);
 			}
-
 		
 			str_arr.arr[str_arr.len++].arr = s.arr;
-			printf("%s ", str_arr.arr[str_arr.len-1].arr);
+			#ifdef DEBUG
+			printf("%s ", str_arr.arr[str_arr.len - 1].arr);
+			#endif // DEBUG
 
 			s.arr = (char*)malloc(sizeof(char));
 			nullCheck(s.arr);
@@ -383,7 +380,10 @@ int main() {
 		s.arr = NULL;
 	}
 
+	#ifdef DEBUG
 	printf("\n\n");
+	#endif // DEBUG
+
 
 
 	size_t index_l;
@@ -430,17 +430,13 @@ int main() {
 				flag_r == 0;
 
 				if (garbage.capacity - garbage.len <= 1) {
-					garbage.arr = (char*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(char));
-					garbage.capacity *= 2;
-					nullCheck(garbage.arr);
+					str_realloc(&garbage);
 				}
 
 				garbage.arr[garbage.len++] = index_l;
 
 				if (garbage.capacity - garbage.len <= 1) {
-					garbage.arr = (char*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(char));
-					garbage.capacity *= 2;
-					nullCheck(garbage.arr);
+					str_arr_realloc(&garbage);
 				}
 
 				garbage.arr[garbage.len++] = index_r;
@@ -455,17 +451,13 @@ int main() {
 				index_r = i;
 
 				if (garbage.capacity - garbage.len <= 1) {
-					garbage.arr = (char*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(char));
-					garbage.capacity *= 2;
-					nullCheck(garbage.arr);
+					str_realloc(&garbage);
 				}
 
 				garbage.arr[garbage.len++] = index_l;
 
 				if (garbage.capacity - garbage.len <= 1) {
-					garbage.arr = (char*)realloc(garbage.arr, (garbage.capacity * 2) * sizeof(char));
-					garbage.capacity *= 2;
-					nullCheck(garbage.arr);
+					str_realloc(&garbage);
 				}
 				garbage.arr[garbage.len++] = index_r;
 			}
@@ -480,8 +472,10 @@ int main() {
 		}
 	}
 
+	#ifdef DEBUG
 
 	printf("\n\n");
+	#endif // DEBUG
 
 	//Far to cel
 	for (size_t i = 0; i < str_arr.len; i++) {
@@ -489,7 +483,6 @@ int main() {
 		if (strlen(str_arr.arr[i].arr) > 3) {
 			if (is_temp(str_arr.arr[i])) {
 				str_arr.arr[i].arr = far_to_cel(str_arr.arr[i], strlen(str_arr.arr[i].arr));
-
 			}
 		}
 	}
@@ -499,49 +492,15 @@ int main() {
 	FILE* file = fopen("output.txt", "w");
 	char* str = NULL;
 
+	string_arr out;
+	out.capacity = 1;
+	out.len = 0;
+	out.arr = (string*)malloc(sizeof(string) * 2 * out.capacity);
 
-	//remove double backspace
-
-	
-	// do some math
-	for (size_t i = 0; i < (str_arr.len); i++) {
-		if (i < str_arr.len - 4) {
-			if (is_num(str_arr.arr[i]) && is_oper(str_arr.arr[i + 2].arr[0]) && is_num(str_arr.arr[i + 4])) {
-				str_arr.arr[i].arr = math_2(str_arr.arr[i], str_arr.arr[i + 2].arr[0], str_arr.arr[i + 4]);
-				str_arr.arr[i + 2].arr = " ";
-				str_arr.arr[i + 4].arr = " ";
-				continue;
-			}
-		}
-		if (i < str_arr.len - 3) {
-			if (is_num(str_arr.arr[i]) && is_oper(str_arr.arr[i + 2].arr[0]) && is_num(str_arr.arr[i + 3])) {
-				str_arr.arr[i].arr = math_2(str_arr.arr[i], str_arr.arr[i + 2].arr[0], str_arr.arr[i + 3]);
-				str_arr.arr[i + 2].arr = " ";
-				str_arr.arr[i + 3].arr = " ";
-				continue;
-			}
-			if (is_num(str_arr.arr[i]) && is_oper(str_arr.arr[i + 1].arr[0]) && is_num(str_arr.arr[i + 3])) {
-				str_arr.arr[i].arr = math_2(str_arr.arr[i], str_arr.arr[i + 1].arr[0], str_arr.arr[i + 3]);
-				str_arr.arr[i + 1].arr = " ";
-				str_arr.arr[i + 3].arr = " ";
-				continue;
-			}
-		}
-			
-
-		if (is_math(str_arr.arr[i]) && str_arr.arr[i].arr[0] != '\0') {
-			str_arr.arr[i].arr = math_1(str_arr.arr[i]);
-			continue;
-		}
-	}
-
-
-	//remove DB spaces and printf
 	for (size_t i = 0; i < str_arr.len; i++) {
 		if (i == 0 && str_arr.arr[i].arr[0] == ' ') {
 			continue;
-		}
-		if (i > 0) {
+		} else if (i > 0) {
 			if (str_arr.arr[i - 1].arr[0] == ' ' && str_arr.arr[i].arr[0] == ' ') {
 				continue;
 			}
@@ -549,9 +508,56 @@ int main() {
 				continue;
 			}
 		}
-
-		fprintf(file, "%s", str_arr.arr[i].arr);
-		printf("%s %d\n", str_arr.arr[i].arr, i);
+		if (out.capacity - out.len == 1) {
+			str_arr_realloc(&out);
+		}
+		out.arr[out.len++].arr = str_arr.arr[i].arr;
+		#ifdef DEBUG
+		printf("%s", out.arr[out.len - 1].arr);
+		#endif // DEBUG
+	}
+	
+	// do some math
+	for (size_t i = 0; i < (out.len); i++) {
+		if (i < out.len - 4) {
+			if (is_num(out.arr[i]) && is_oper(out.arr[i + 2].arr[0]) && is_num(out.arr[i + 4])) {
+				out.arr[i].arr = math_2(out.arr[i], out.arr[i + 2].arr[0], out.arr[i + 4]);
+				out.arr[i + 2].arr = " ";
+				out.arr[i + 4].arr = " ";
+				continue;
+			}
+		}
+		if (i < out.len - 3) {
+			if (is_num(out.arr[i]) && is_oper(out.arr[i + 2].arr[0]) && is_num(out.arr[i + 3])) {
+				out.arr[i].arr = math_2(out.arr[i], out.arr[i + 2].arr[0], out.arr[i + 3]);
+				out.arr[i + 2].arr = " ";
+				out.arr[i + 3].arr = " ";
+				continue;
+			}
+			if (is_num(out.arr[i]) && is_oper(out.arr[i + 1].arr[0]) && is_num(out.arr[i + 3])) {
+				out.arr[i].arr = math_2(out.arr[i], out.arr[i + 1].arr[0], out.arr[i + 3]);
+				out.arr[i + 1].arr = " ";
+				out.arr[i + 3].arr = " ";
+				continue;
+			}
+		}
+		if (is_math(out.arr[i]) && out.arr[i].arr[0] != '\0') {
+			out.arr[i].arr = math_1(out.arr[i]);
+			continue;
+		}
+	}
+	
+	//fprintf
+	for (size_t i = 0; i < out.len; i++) {
+		if (i > 0) {
+			if (out.arr[i-1].arr[0] == ' ' && out.arr[i].arr[0] == ' ') {
+				continue;
+			}
+		} 
+		fprintf(file, "%s", out.arr[i].arr);
+		#ifdef DEBUG
+		printf("%s %d\n", out.arr[i].arr, i);
+		#endif // DEBUG
 	}
 
 	return 0;
