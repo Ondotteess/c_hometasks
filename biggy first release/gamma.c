@@ -479,7 +479,9 @@ int main() {
 
 	//Far to cel
 	for (size_t i = 0; i < str_arr.len; i++) {
+		#ifdef DEBUG
 		printf("str_log:\t %d", strlen(str_arr.arr[i].arr));
+		#endif // DEBUG
 		if (strlen(str_arr.arr[i].arr) > 3) {
 			if (is_temp(str_arr.arr[i])) {
 				str_arr.arr[i].arr = far_to_cel(str_arr.arr[i], strlen(str_arr.arr[i].arr));
