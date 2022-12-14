@@ -24,7 +24,7 @@ typedef struct {
 } string_arr;
 
 void str_init(string* s) {
-	s->arr = (char*)malloc(sizeof(char));
+	s->arr = (char*)malloc(sizeof(char)*2);
 	nullCheck(s->arr);
 	s->len = 0;
 	s->capacity = 1;
@@ -46,6 +46,11 @@ void str_arr_realloc(string_arr* s) {
 	}
 }
 
+//char* strcpy(char* copy, const char* origin)
+//{
+//	while ((*copy++ = *origin++) != '\0');
+//}
+
 _Bool is_num(string s) {
 	for (size_t i = 0; i < strlen(s.arr); i++) {
 		if (!(s.arr[i] >= '0' && s.arr[i] <= '9')) {
@@ -61,9 +66,7 @@ _Bool is_word(string s, size_t len) {
 			return 1;
 		}
 	}
-	else {
-		return 0;
-	}
+	return 0;
 }
 
 _Bool is_lit(char c) {
@@ -95,23 +98,25 @@ _Bool is_temp(string s) {
 	}
 }
 
-char* far_to_cel(string s, size_t size) {
+void far_to_cel(string* s, size_t size) {
 	float far;
 	string first;
 	string second;
 	string result;
+
+	str_realloc(&result);
 
 	str_init(&first);
 	str_init(&second);
 	str_init(&result);
 
 	for (size_t i = 0; i < size; i++) {
-		if (s.arr[i] == ',') {
-			s.arr[i] = '.';
+		if (s->arr[i] == ',') {
+			s->arr[i] = '.';
 		}
 	}
 
-	far = atof(s.arr);
+	far = atof(s->arr);
 
 	float cel = (far - 32) * 0.555;
 
@@ -133,15 +138,21 @@ char* far_to_cel(string s, size_t size) {
 	result.arr[result.len++] = sgn;
 	for (size_t i = 0; i < len_fir; i++) {
 		result.arr[result.len++] = first.arr[i];
+		str_realloc(&result);
 	}
-	result.arr[result.len++] = ',';
-	result.arr[result.len++] = second.arr[0];
 
+	result.arr[result.len++] = ',';
+	str_realloc(&result);
+	result.arr[result.len++] = second.arr[0];
+	str_realloc(&result);
 	result.arr[result.len++] = 't';
+	str_realloc(&result);
 	result.arr[result.len++] = 'C';
+	str_realloc(&result);
 	result.arr[result.len] = '\0';
 
-	return result.arr;
+	strcpy(s->arr, result.arr);
+
 }
 
 _Bool is_oper(char c) {
@@ -223,17 +234,19 @@ char* math(string* s1, char op, string* s2) {
 }
 
 _Bool is_spec_math(string* s) {
-	return ((strlen(s->arr) > 1) && (s->arr[0] == '+' || s->arr[0] == '-') && s->arr[strlen(s->arr) - 1] != 'C');
+	size_t len = strlen(s->arr);
+	return ((len > 1) && (s->arr[0] == '+' || s->arr[0] == '-') && s->arr[len - 1] != 'C');
 }
 
 char* spec_math(string* s1, string* s2) {
 	int first, second;
 	char sgn = s2->arr[0];
 
-	for (size_t i = 1; i < strlen(s2->arr); i++) {
+	size_t len = strlen(s2->arr);
+	for (size_t i = 1; i < len; i++) {
 		s2->arr[i - 1] = s2->arr[i];
 	}
-	s2->arr[strlen(s2->arr) - 1] = '\0';
+	s2->arr[len - 1] = '\0';
 	first = atoi(s1->arr);
 	second = atoi(s2->arr);
 
@@ -250,10 +263,10 @@ char* spec_math(string* s1, string* s2) {
 void end_of_string(string* str, string_arr* s_arr) {
 	str_realloc(&str);
 	str_arr_realloc(&s_arr);
-	str->arr[str->len++] = '\0';
-	s_arr->arr[s_arr->len++].arr = str->arr;
+	
+	str->arr[str->len] = '\0';
 	str_realloc(&str);
-	str_arr_realloc(&s_arr);
+	s_arr->arr[s_arr->len++].arr = str->arr;
 }
 
 int main(int argc, const char** argv) {
@@ -274,7 +287,7 @@ int main(int argc, const char** argv) {
 	string garbage;
 
 	string_arr str_arr;
-	str_arr.capacity = 1;
+	str_arr.capacity = 2;
 	str_arr.len = 0;
 	str_arr.arr = (string*)malloc(sizeof(string) * 2);
 	nullCheck(str_arr.arr);
@@ -306,6 +319,7 @@ int main(int argc, const char** argv) {
 		else if ((sym >= 'a' && sym <= 'z') || (sym >= 'A' && sym <= 'Z') || (sym >= '0' && sym <= '9') || (sym == '+' || sym == '-')) {
 			if (s.len > 0) {
 				if ((s.arr[s.len - 1] == '+' || s.arr[s.len - 1] == '-') && sym != '+' && sym != '-') {
+					str_realloc(&s);
 					s.arr[s.len++] = sym;
 					continue;
 				}
@@ -339,7 +353,11 @@ int main(int argc, const char** argv) {
 #endif // DEBUG
 				str_init(&s);
 			}
-			end_of_string(&s, &str_arr);
+
+			s.arr[s.len++] = sym;
+			s.arr[s.len] = '\0';
+
+			str_arr_realloc(&str_arr);
 
 			str_arr.arr[str_arr.len++].arr = s.arr;
 #ifdef DEBUG
@@ -358,23 +376,29 @@ int main(int argc, const char** argv) {
 		if (is_word(str_arr.arr[i], strlen(str_arr.arr[i].arr)) && is_palindrom(str_arr.arr[i], strlen(str_arr.arr[i].arr))) {
 			s.arr = "PALINDROM";
 			str_arr.arr[i] = s;
-
 		}
 		s.arr = NULL;
 	}
+
 
 	//Far to cel
 	for (size_t i = 0; i < str_arr.len; i++) {
 #ifdef DEBUG
 		printf("str_log:\t %d", strlen(str_arr.arr[i].arr));
 #endif // DEBUG
-
-		if (strlen(str_arr.arr[i].arr) > 3) {
+		size_t len = strlen(str_arr.arr[i].arr);
+		if (len > 3) {
 			if (is_temp(str_arr.arr[i])) {
-				str_arr.arr[i].arr = far_to_cel(str_arr.arr[i], strlen(str_arr.arr[i].arr));
+				far_to_cel(&str_arr.arr[i], len);
+				
+				printf("%s   %d!!\n", str_arr.arr[i].arr, strlen(str_arr.arr[i].arr));
 			}
 		}
+
 	}
+
+	//remove_all_space(&str_arr);
+
 #ifdef DEBUG
 	printf("\n\n");
 #endif // DEBUG
@@ -436,16 +460,17 @@ int main(int argc, const char** argv) {
 		for (size_t i = 0; i < garbage.len; i++) {
 			str_arr.arr[garbage.arr[i]].arr[0] = ' ';
 		}
+
 		if (garbage.len == 0) {
 			break;
 		}
 	}
-	
 
 	remove_all_space(&str_arr);
 
 	while (1) {
 		for (size_t i = 0; i < str_arr.len; i++) {
+
 			if (i < str_arr.len - 4) {
 				if (is_num(str_arr.arr[i]) && is_oper(str_arr.arr[i + 2].arr[0]) && is_num(str_arr.arr[i + 4])) {
 					str_arr.arr[i].arr = math(&str_arr.arr[i], str_arr.arr[i + 2].arr[0], &str_arr.arr[i + 4]);
@@ -501,11 +526,8 @@ int main(int argc, const char** argv) {
 	remove_all_space(&str_arr);
 
 #ifdef DEBUG
-
 	printf("\n\n");
 #endif // DEBUG
-
-
 	//fprintf
 	for (size_t i = 0; i < str_arr.len; i++) {
 		fprintf(file_out, "%s", str_arr.arr[i].arr);
@@ -522,6 +544,9 @@ int main(int argc, const char** argv) {
 
 	fclose(file_out);
 
-
+	//for (size_t i = 0; i < str_arr.len; i++) {
+	//	free(str_arr.arr[i].arr);
+	//}
+   
 	return 0;
 }
